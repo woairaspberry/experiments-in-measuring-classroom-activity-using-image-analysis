@@ -1,0 +1,369 @@
+/**
+ * This is the main program for the Thesis
+**/
+#define _CRT_SECURE_NO_DEPRECATE				//for fopen
+#include<iostream>
+#include <stdio.h>
+#include "cv.h"
+#include "highgui.h"
+#include<opencv2/highgui/highgui.hpp>
+#include<opencv2/imgproc/imgproc.hpp>
+
+using namespace std;
+using namespace cv;
+
+// *** Change this to your install location! ***
+// *********************************************
+#define OPENCV_ROOT  "C:/OpenCV/"
+// *********************************************
+
+int no_of_faces;
+void displayDetections(IplImage * pInpImg, CvSeq * pFaceRectSeq);
+
+int main()
+{
+
+	int i;
+	
+	printf("Please enter a number\n 1: State of Classroom\n 2: Poll Trend\n 3: Color Detection\n");
+	cin >> i;
+	printf("The value that you enter is %d \n", i);
+
+	if(i == 1){
+		// variables
+		IplImage * pInpImg = 0;
+		CvHaarClassifierCascade * pCascade = 0;  // the face detector
+		CvMemStorage * pStorage = 0;        // memory for detector to use
+		CvSeq * pFaceRectSeq;               // memory-access interface
+		string test1;
+		const char* test2;
+		Mat src_test1;
+
+		//Input from user
+		printf("Enter test image location: ");
+		cin >> test1;
+		test2 = test1.c_str();
+
+		// initializations
+		src_test1 = imread(test1, 1);
+
+		pInpImg = cvLoadImage(test2, CV_LOAD_IMAGE_COLOR);
+		pStorage = cvCreateMemStorage(0);
+		pCascade = (CvHaarClassifierCascade *)cvLoad
+		   ((OPENCV_ROOT"/data/haarcascades/haarcascade_frontalface_default.xml"),
+		0, 0, 0 );
+
+		// validate that everything initialized properly
+		if( !pInpImg || !pStorage || !pCascade )
+		{
+			printf("Initialization failed: \n",
+			(!pInpImg)?  "can't load image file" :
+			(!pCascade)? "can't load haar-cascade -- "
+				         "make sure path is correct" :
+				"unable to allocate memory for data storage");
+			exit(-1);
+		}
+
+		// detect faces in image
+		pFaceRectSeq = cvHaarDetectObjects
+			(pInpImg, pCascade, pStorage,
+			1.1,                       // increase search scale by 10% each pass
+			3,                         // merge groups of three detections
+			CV_HAAR_DO_CANNY_PRUNING,  // skip regions unlikely to contain a face
+			cvSize(20,20));            // smallest size face to detect = 20x20
+
+
+		// display detected faces
+		displayDetections(pInpImg, pFaceRectSeq);
+
+		// clean up and release resources
+		cvReleaseImage(&pInpImg);
+		if(pCascade) cvReleaseHaarClassifierCascade(&pCascade);
+		if(pStorage) cvReleaseMemStorage(&pStorage);
+
+		if(no_of_faces == 0){
+			printf("Room is not in use!\n");
+		}
+		if(no_of_faces>0){
+			printf("Room is in use!\n");
+		}
+
+		return 0;
+	
+	}
+
+	else if(i == 2){
+		string c;
+		printf("Enter image location: ");
+		cin >> c;
+		string d;
+		printf("Enter image location: ");
+		cin >> d;
+
+		Mat image = imread(c, CV_LOAD_IMAGE_GRAYSCALE);
+		Mat image_2 = imread(d, CV_LOAD_IMAGE_GRAYSCALE);
+		
+		// allcoate memory for no of pixels for each intensity value
+		int histogram[256];
+		int histo[256];
+		int reshisto[256];
+ 
+		// initialize all intensity values to 0
+		for(int i = 0; i < 255; i++)
+		{
+			histogram[i] = 0;
+		}
+	
+		for(int i = 0; i < 255; i++)
+		{
+			histo[i] = 0;
+		}
+
+		for(int i = 0; i < 255; i++)
+		{
+			reshisto[i] = 0;
+		}
+ 
+		// calculate the no of pixels for each intensity values
+		for(int y = 0; y < image.rows; y++)
+			for(int x = 0; x < image.cols; x++)
+				histogram[(int)image.at<uchar>(y,x)]++;
+
+		for(int y=0; y<image_2.rows; y++)
+			for(int x=0; x<image_2.cols; x++)
+				histo[(int) image_2.at<uchar>(y,x)]++;
+ 
+		for(int i = 0; i < 256; i++)
+			cout<<histogram[i]<<" ";
+
+		for(int i=0; i<256; i++)
+			cout<<histo[i]<<" ";
+
+		// draw the histograms
+		int hist_w = 512; int hist_h = 400;
+		int bin_w = cvRound((double) hist_w/256);
+	
+		int hist_width = 512; int hist_height = 400;
+		int bin_width = cvRound((double) hist_width/256);
+
+		int reshist_w = 512; int reshist_h = 400;
+		int resbin_w = cvRound((double) reshist_w/256);
+ 
+		Mat histImage(hist_h, hist_w, CV_8UC1, Scalar(255, 255, 255));
+		Mat histImage_2(hist_height, hist_width, CV_8UC3, Scalar(255, 255, 255));
+		Mat reshistImage(reshist_h, reshist_w, CV_8UC4, Scalar(255, 255, 255));
+
+		// find the maximum intensity element from histogram
+		int max = histogram[0];
+		int min = histogram[0];
+		int total = histogram[0];
+		int mean = 0;
+		int m_2 = histo[0];
+		int m = histo[0];
+		int tot = histo[0];
+		int mean_2 = 0;
+		int resmax = reshisto[0];
+	
+		for(int i = 1; i < 256; i++)
+		{
+			if(max < histogram[i]){
+				max = histogram[i];
+			}
+		}
+
+		for(int i = 1; i < 256; i++)
+		{
+			if(m_2 < histo[i])
+			{
+				m_2 = histo[i];
+			}
+		}
+
+		//residual histogram
+		for(int i = 0; i < 256; i++)
+		{
+			//Eliminate the similarities within the 2 images to get the differences
+			reshisto[i] = histogram[i] - histo[i];
+
+			if(reshisto[i] < 0)
+			{
+				reshisto[i] = 0;
+			}
+		}
+
+		for(int i = 1; i < 256; i++)
+		{
+			if(resmax < reshisto[i])
+			{
+				resmax = reshisto[i];
+			}
+		}
+
+		// normalize the histogram between 0 and histImage.rows
+ 
+		for(int i = 0; i < 255; i++)
+		{
+		  histogram[i] = ((double)histogram[i]/max)*histImage.rows;
+		}
+	
+		for(int i=0; i<255; i++)
+		{
+			histo[i] = ((double)histo[i]/m_2)*histImage_2.rows;
+		}
+
+		for(int i=0; i<255; i++)
+		{
+			reshisto[i] = ((double)reshisto[i]/resmax)*reshistImage.rows;
+		}
+ 
+		// draw the intensity line for histogram
+		for(int i = 0; i < 255; i++)
+		{
+			line(histImage, Point(bin_w*(i), hist_h),
+							Point(bin_w*(i), hist_h - histogram[i]),
+							Scalar(0,0,0), 1, 8, 0);
+		}
+
+		for(int i=0; i<255; i++)
+		{
+			line(histImage_2, Point(bin_width*(i), hist_height),
+							  Point(bin_width*(i), hist_height - histo[i]),
+							  Scalar(0,0,0), 1,8,0);
+		}
+ 
+		for(int i=0; i<255; i++)
+		{
+			line(reshistImage, Point(resbin_w*(i), reshist_h),
+				Point(resbin_w*(i), reshist_h - reshisto[i]),
+				Scalar(0,0,0), 1, 8, 0);
+		}
+		// display histogram
+		namedWindow("Intensity Histogram", CV_WINDOW_AUTOSIZE);
+		imshow("Intensity Histogram", histImage);
+		namedWindow("Image", CV_WINDOW_AUTOSIZE);
+		imshow("Image", image);
+
+		namedWindow("Intensity Histogram 2", CV_WINDOW_AUTOSIZE);
+		imshow("Intensity Histogram 2", histImage_2);
+		namedWindow("Image 2", CV_WINDOW_AUTOSIZE);
+		imshow("Image 2", image_2);
+
+		namedWindow("Residual Histogram", CV_WINDOW_AUTOSIZE);
+		imshow("Residual Histogram", reshistImage);
+
+		waitKey();
+		return 0;
+	}
+
+	else if(i==3){
+		string c;
+		printf("Enter image location: ");
+		cin >> c;
+
+		Mat image = imread(c);
+
+		if(image.empty())
+		{
+			std::cout << "!!! Failed imread()" <<std::endl;
+			return -1;
+		}
+
+		//Values for HSV can be changed
+		int iLowH = 95;
+		int iHighH = 125;
+
+		int iLowS = 177; 
+		int iHighS = 255;
+
+		int iLowV = 150;
+		int iHighV = 255;
+
+		int x;
+
+		Mat imgHSV;
+		cvtColor(image, imgHSV, COLOR_RGB2HSV);
+
+		Mat img_red;
+		inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), img_red);
+	 
+		//morphological opening (removes small objects from the foreground)
+		erode(img_red, img_red, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+		dilate( img_red, img_red, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+	
+		//morphological closing (removes small holes from the foreground)	
+		dilate( img_red, img_red, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
+		erode(img_red, img_red, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
+
+		namedWindow("ImageRGB", CV_WINDOW_AUTOSIZE);
+		imshow("ImageRGB", image);
+
+		namedWindow("ImageHSV", CV_WINDOW_AUTOSIZE);
+		imshow("ImageHSV", imgHSV);
+
+		namedWindow("inRange", CV_WINDOW_AUTOSIZE);
+		imshow("inRange", img_red);
+	
+		std::vector<std::vector<cv::Point> > contours;
+		std::vector<cv::Vec4i> hierarchy;
+		cv::findContours( img_red, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+
+		std::vector<std::vector<cv::Point> > contours_poly( contours.size() );
+		std::vector<cv::Rect> boundRect( contours.size() );
+		for( x = 0; x < contours.size(); x++)
+		{
+			cv::approxPolyDP( cv::Mat(contours[x]), contours_poly[x], 3, true );
+			boundRect[x] = cv::boundingRect( cv::Mat(contours_poly[x]) );
+		}
+
+		//Draw rectangles over detected areas
+		cv::Mat tmp = cv::Mat::zeros( img_red.size(), CV_8UC3 );
+		for( int i = 0; i< contours.size(); i++ )
+		{
+			rectangle( tmp, boundRect[i].tl(), boundRect[i].br(), cv::Scalar(0, 255, 0), 2, 8, 0);
+		
+		}
+
+		printf("The number of vote(s) are : %d", x);
+
+		namedWindow("Rect", CV_WINDOW_AUTOSIZE);
+		imshow("Rect", tmp);
+
+		waitKey();
+		return 0;
+	}
+	else{
+		printf("Invalid command\n");
+	}
+}
+
+void displayDetections(IplImage * pInpImg, CvSeq * pFaceRectSeq)
+{
+		const char * DISPLAY_WINDOW = "Haar Window";
+		int i;
+	
+		// create a window to display detected faces
+		cvNamedWindow(DISPLAY_WINDOW, CV_WINDOW_AUTOSIZE);
+	
+		// draw a rectangular outline around each detection
+		for(i=0;i<(pFaceRectSeq? pFaceRectSeq->total:0); i++ )
+		{
+			CvRect* r = (CvRect*)cvGetSeqElem(pFaceRectSeq, i);
+			CvPoint pt1 = { r->x, r->y };
+			CvPoint pt2 = { r->x + r->width, r->y + r->height };
+			cvRectangle(pInpImg, pt1, pt2, CV_RGB(0,255,0), 3, 4, 0);
+		}
+
+		if(i>0){
+			printf("Face Detected: %d\n", i);
+		}
+		else{
+			printf("No face detected\n");
+		}
+
+		no_of_faces = i;
+
+		// display face detections
+		cvShowImage(DISPLAY_WINDOW, pInpImg);
+		cvWaitKey(0);
+		cvDestroyWindow(DISPLAY_WINDOW);
+}
