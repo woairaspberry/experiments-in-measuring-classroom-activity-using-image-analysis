@@ -1,7 +1,7 @@
 Experiments-In-Measuring-Classroom-Activity-Using-Image-Analysis
 ================================================================
 
-This is the repository for ENGG4802 thesis project: Experiments in measuring classroom activity using image analysis\n
+This is the repository for ENGG4802 thesis project: Experiments in measuring classroom activity using image analysis
 
 Programs/library needed
 1) Visual Studio 2010/2012
@@ -9,6 +9,7 @@ Programs/library needed
 You can download OpenCV at their website @ http://opencv.org/downloads.html
 
 Installtion Steps
+
 1. Click on the .exe and extract to the desired directory (Preferred directory in C:/)
 2. This step is to set an environment variable. 
 Start up a command window and enter (depending on your machine)
