@@ -33,14 +33,14 @@ How to build applications with OpenCV inside Visual Studio (VS)
 9. The names of libraries are as follows: opencv_(The Name of the modules)(The version Number of the library you use)d.lib
 10. A full list would look like this
 11. opencv_core231d.lib
-opencv_imgproc231d.lib
-opencv_highgui231d.lib
-opencv_ml231d.lib
-opencv_video231d.lib
-opencv_features2d231d.lib
-opencv_calib3d231d.lib
-opencv_objdetect231d.lib
-opencv_contrib231d.lib
-opencv_legacy231d.lib
-opencv_flann231d.lib
-12. The d at the nd means these libraries required for the debug mode.
+12. opencv_imgproc231d.lib
+13. opencv_highgui231d.lib
+14. opencv_ml231d.lib
+15. opencv_video231d.lib
+16. opencv_features2d231d.lib
+17. opencv_calib3d231d.lib
+18. opencv_objdetect231d.lib
+19. opencv_contrib231d.lib
+20.opencv_legacy231d.lib
+22. opencv_flann231d.lib
+23. The d at the nd means these libraries required for the debug mode.
