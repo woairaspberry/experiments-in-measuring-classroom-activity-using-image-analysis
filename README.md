@@ -18,6 +18,30 @@ Installtion Steps
 6. setx -m OPENCV_DIR C:\OpenCV\Build\x86\vc11     (suggested for Visual Studio 2012 - 32 bit Windows)
 7. setx -m OPENCV_DIR C:\OpenCV\Build\x64\vc11     (suggested for Visual Studio 2012 - 64 bit Windows)
 8. Next go to System Variables -> system PATH -> Path Editor and enter %OPENCV_DIR%\bin
+9. VS has two build modes, Release and a Debig mode (choose one of them)
+2. They can be found in the Property Manager (View -> Property Pages)
+3. Right click on Debug and add new project property sheet (this can be reuse for future OpenCV projects)
+4. Select the sheet. Right Click -> Properties.
+5. Go under C++ groups General entry and under "Additional Include Directories" add the path to your OpenCV include
+6. $(OPENCV_DIR)\..\..\include
+6. Next go to Linker -> General and under "Additional Library Directories" and add the libs directory
+7. $(OPENCV_DIR)\lib
+8. Then go to Linker -> Input and under "Additional Library Directories" entry and add the name of all modules which you want to use
+9. The names of libraries are as follows: opencv_(The Name of the modules)(The version Number of the library you use)d.lib
+10. A full list would look like this
+11. opencv_core231d.lib
+12. opencv_imgproc231d.lib
+13. opencv_highgui231d.lib
+14. opencv_ml231d.lib
+15. opencv_video231d.lib
+16. opencv_features2d231d.lib
+17. opencv_calib3d231d.lib
+18. opencv_objdetect231d.lib
+19. opencv_contrib231d.lib
+20.opencv_legacy231d.lib
+22. opencv_flann231d.lib
+23. The d at the nd means these libraries required for the debug mode.
+
 
 
 How to build applications with OpenCV inside Visual Studio (VS)
